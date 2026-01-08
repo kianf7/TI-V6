@@ -2,6 +2,7 @@ from microbit import *
 import music
 import time
 import radio
+import log
 
 command = [0,1,2,3,4]
 
@@ -12,9 +13,30 @@ notes = [
 ]
 
 selection = 0
+time_out = False
 start = time.ticks_ms()
 last_index = 0
 radio.on()
+radio.config(group=60)
+global send_Flag
+send_Flag = False
+compass.calibrate()
+
+def log_message(message):
+    timestamp = time.ticks_ms()
+    temp = temperature()
+    volume = microphone.sound_level()
+    light = display.read_light_level()
+
+    log.add({
+        'group_id': 60,
+        'message': message,
+        'temperature': temp,
+        'volume': volume,
+        'lightlevel': light,
+        'timestamp': timestamp
+    })
+    
 
 def decode_message(message):
     try: 
@@ -26,6 +48,7 @@ def decode_message(message):
 def message_listener():
     message = radio.receive()
     if message:
+        log_message(message)
         decoded = decode_message(message)
         if decoded in [0, 1, 2, 3, 4]:
             return decoded
@@ -36,7 +59,9 @@ def message_listener():
 
 
 def show_temp():
-    display.scroll(temperature())
+    temp = temperature()
+    display.scroll(temp)
+    radio.send(str(temp))
 
 def play_t1():
      music.pitch(262, 100)
@@ -70,18 +95,18 @@ def show_compass(selection, start):
             if message == -1:
                 display.show("X")
                 sleep(1000)
-                return 4, time.ticks_ms()
+                return 4, time.ticks_ms(), False
             selection = message
-            return selection, time.ticks_ms()
+            return selection, time.ticks_ms(), False
         if (button_a.was_pressed()):
             selection = 0
-            return selection, time.ticks_ms()
+            return selection, time.ticks_ms(), True
 
 while True:
     message= message_listener()
 
     if message is None: 
-        send_Flag = False
+        pass
 
     elif message == - 1: 
         start = time.ticks_ms()
@@ -96,20 +121,29 @@ while True:
 
     display.show(selection)
     if time.ticks_diff(time.ticks_ms(), start) >= 10000:
-        selection, start = show_compass(selection, start)
+        selection = 4
+        time_out = True
     if button_a.was_pressed():
         selection = command[(selection + 1)%len(command)]
         start = time.ticks_ms()
-    if button_b.was_pressed() or send_Flag:
+    if button_b.was_pressed() or send_Flag or time_out:
         start = time.ticks_ms()
         if selection == 0:
             show_temp()
+            send_Flag = False
         elif selection == 1:
             play_t1()
+            send_Flag = False
         elif selection == 2:
             play_t2()
+            send_Flag = False
         elif selection == 3:
             selection, start = play_song(selection, start)
+            if selection == 3:
+                send_Flag = False
+            else:
+                send_Flag = True
         elif selection == 4:
-            selection, start = show_compass(selection, start)
-        send_Flag = False
+            selection, start, button_pressed = show_compass(selection, start)
+            send_Flag = not(button_pressed)
+    time_out = False

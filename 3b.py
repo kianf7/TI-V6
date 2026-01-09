@@ -88,12 +88,17 @@ def pwm(percent, period):
 
 timer = 0
 brightness = 100
+flag = False
+
 
 while True:
     pwm(brightness, 20)
     timer += 1
     if timer % 10 == 0:
-        if brightness <= 0:
-            brightness = 100
+        if brightness <= 0 or brightness > 100:
+            flag = not(flag)
+        if flag:
+            brightness += 10
         else:
-            brightness = brightness - 10
+            brightness -= 10
+            

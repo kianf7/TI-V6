@@ -24,8 +24,6 @@ COL_2 = const(11)
 
 
 
-mem32[REG_GPIO_DIRSET] = 1 << ROW_2
-mem32[REG_GPIO_DIRSET] = 1 << COL_2
 
 
 

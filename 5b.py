@@ -142,8 +142,6 @@ while True:
                 send_Flag = True
         elif selection == 4:
             music.stop()
-            display.show("S")
-            sleep(500)
             send_Flag = False
         elif selection == 5:
             selection, start, button_pressed = show_compass(selection, start)

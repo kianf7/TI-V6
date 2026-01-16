@@ -4,7 +4,7 @@ import time
 import radio
 import log
 
-command = [0,1,2,3,4]
+command = [0,1,2,3,4,5]
 
 notes = [
     'C4:4', 'E4:4', 'G4:4', 'C5:4',
@@ -50,13 +50,11 @@ def message_listener():
     if message:
         log_message(message)
         decoded = decode_message(message)
-        if decoded in [0, 1, 2, 3, 4]:
+        if decoded in [0, 1, 2, 3, 4, 5]:
             return decoded
         else:
             return -1
-
     return None
-
 
 def show_temp():
     temp = temperature()
@@ -68,7 +66,6 @@ def play_t1():
 
 def play_t2():
     music.pitch(349, 100) 
-
 
 def play_song(selection, start):
     for note in notes:
@@ -91,11 +88,11 @@ def show_compass(selection, start):
     while True:
         display.scroll(compass.heading())
         message = message_listener()
-        if message is not None and message is not 4:
+        if message is not None and message is not 5:
             if message == -1:
                 display.show("X")
                 sleep(1000)
-                return 4, time.ticks_ms(), False
+                return 5, time.ticks_ms(), False
             selection = message
             return selection, time.ticks_ms(), False
         if (button_a.was_pressed()):
@@ -121,11 +118,12 @@ while True:
 
     display.show(selection)
     if time.ticks_diff(time.ticks_ms(), start) >= 10000:
-        selection = 4
+        selection = 5
         time_out = True
     if button_a.was_pressed():
         selection = command[(selection + 1)%len(command)]
         start = time.ticks_ms()
+
     if button_b.was_pressed() or send_Flag or time_out:
         start = time.ticks_ms()
         if selection == 0:
@@ -144,6 +142,11 @@ while True:
             else:
                 send_Flag = True
         elif selection == 4:
+            music.stop()
+            display.show("S")
+            sleep(500)
+            send_Flag = False
+        elif selection == 5:
             selection, start, button_pressed = show_compass(selection, start)
             send_Flag = not(button_pressed)
     time_out = False

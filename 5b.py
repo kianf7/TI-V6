@@ -14,7 +14,6 @@ notes = [
 selection = 0
 time_out = False
 start = time.ticks_ms()
-last_index = 0
 radio.on()
 radio.config(group=60)
 global send_Flag

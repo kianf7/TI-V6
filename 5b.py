@@ -142,6 +142,6 @@ while True:
             else:
                 send_Flag = True
         elif selection == 4:
-            selection, start, button_pressed = show_compass(selection, start)
+            selection, start, button_pressed = show_compass(selection)
             send_Flag = not(button_pressed)
     time_out = False

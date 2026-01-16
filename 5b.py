@@ -4,7 +4,7 @@ import time
 import radio
 import log
 
-command = [0,1,2,3,4,5]
+
 
 notes = [
     'C4:4', 'E4:4', 'G4:4', 'C5:4',
@@ -15,7 +15,6 @@ notes = [
 selection = 0
 time_out = False
 start = time.ticks_ms()
-last_index = 0
 radio.on()
 radio.config(group=60)
 global send_Flag
@@ -121,7 +120,7 @@ while True:
         selection = 5
         time_out = True
     if button_a.was_pressed():
-        selection = command[(selection + 1)%len(command)]
+        selection = (selection + 1)%6
         start = time.ticks_ms()
 
     if button_b.was_pressed() or send_Flag or time_out:

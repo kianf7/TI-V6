@@ -15,53 +15,12 @@ notes = [
 selection = 0
 time_out = False
 start = time.ticks_ms()
-last_index = 0
-radio.on()
-radio.config(group=60)
-global send_Flag
-send_Flag = False
 compass.calibrate()
-
-def log_message(message):
-    timestamp = time.ticks_ms()
-    temp = temperature()
-    volume = microphone.sound_level()
-    light = display.read_light_level()
-
-    log.add({
-        'group_id': 60,
-        'message': message,
-        'temperature': temp,
-        'volume': volume,
-        'lightlevel': light,
-        'timestamp': timestamp
-    })
-    
-
-def decode_message(message):
-    try: 
-        decoded = int(message)
-        return decoded
-    except: 
-        return -1
-
-def message_listener():
-    message = radio.receive()
-    if message:
-        log_message(message)
-        decoded = decode_message(message)
-        if decoded in [0, 1, 2, 3, 4]:
-            return decoded
-        else:
-            return -1
-
-    return None
 
 
 def show_temp():
     temp = temperature()
     display.scroll(temp)
-    radio.send(str(temp))
 
 def play_t1():
      music.pitch(262, 100)
@@ -76,37 +35,14 @@ def play_song():
     return selection, start
 
 
-def show_compass(selection, start):
+def show_compass():
     while True:
         display.scroll(compass.heading())
-        message = message_listener()
-        if message is not None and message is not 5:
-            if message == -1:
-                display.show("X")
-                sleep(1000)
-                return 5, time.ticks_ms(), False
-            selection = message
-            return selection, time.ticks_ms(), False
         if (button_a.was_pressed()):
             selection = 0
             return selection, time.ticks_ms(), True
 
 while True:
-    message= message_listener()
-
-    if message is None: 
-        pass
-
-    elif message == - 1: 
-        start = time.ticks_ms()
-        display.show("X")
-        send_Flag = False
-        sleep(1000)
-
-    else:
-        start = time.ticks_ms()
-        selection = message
-        send_Flag = True
 
     display.show(selection)
     if time.ticks_diff(time.ticks_ms(), start) >= 10000:
@@ -117,25 +53,19 @@ while True:
         selection = (selection + 1)%6
         start = time.ticks_ms()
         
-    if button_b.was_pressed() or send_Flag or time_out:
+    if button_b.was_pressed() or time_out:
         start = time.ticks_ms()
         if selection == 0:
             show_temp()
-            send_Flag = False
         elif selection == 1:
             play_t1()
-            send_Flag = False
         elif selection == 2:
             play_t2()
-            send_Flag = False
         elif selection == 3:
             play_song()
-            send_Flag = False 
         elif selection == 4:
-            music.stop() 
-            send_Flag = False
+            music.stop()
         elif selection == 5:
-            selection, start, button_pressed = show_compass(selection, start)
-            send_Flag = not(button_pressed)
+            selection, start, button_pressed = show_compass()
             
     time_out = False
